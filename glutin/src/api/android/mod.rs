@@ -57,6 +57,11 @@ impl Context {
     ) -> Result<(winit::window::Window, Self), CreationError> {
         let win = wb.build(el)?;
         let gl_attr = gl_attr.clone().map_sharing(|c| &c.0.egl_context);
+        // Wait until native window is available
+        use std::{thread, time};
+        while ndk_glue::native_window().is_none() {
+            thread::sleep(time::Duration::from_millis(100));
+        }
         let nwin = ndk_glue::native_window();
         if nwin.is_none() {
             return Err(OsError("Android's native window is null".to_string()));
